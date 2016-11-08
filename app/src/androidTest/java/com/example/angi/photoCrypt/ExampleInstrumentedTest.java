@@ -1,4 +1,4 @@
-package com.example.angi.projektarbeit;
+package com.example.angi.photoCrypt;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

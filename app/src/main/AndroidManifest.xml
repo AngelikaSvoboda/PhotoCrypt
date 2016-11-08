@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.angi.projektarbeit">
+    package="com.example.angi.photoCrypt">
 
     <uses-sdk android:minSdkVersion="21"/>
     <uses-feature
@@ -16,7 +16,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.angi.photoCrypt.MainActivity"
             android:label="KryptoApp"
             android:theme="@style/AppTheme.NoActionBar">
 
@@ -26,7 +26,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".selectPictureFrame"></activity>
+        <activity android:name="com.example.angi.photoCrypt.selectPictureFrame"></activity>
 
         <provider
             android:name="android.support.v4.content.FileProvider"
