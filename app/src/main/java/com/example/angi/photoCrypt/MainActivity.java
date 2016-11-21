@@ -1,9 +1,12 @@
 package com.example.angi.photoCrypt;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -17,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +33,7 @@ public class MainActivity extends AppCompatActivity
 
     String mCurrentPhotoPath;
     private Uri photoURI;
+    ImageView mImageView;
 
     // Speichern des von der Kamera geschossenes Foto
     private File createImageFile() throws IOException {
@@ -47,7 +52,7 @@ public class MainActivity extends AppCompatActivity
         return image;
     }
 
-    static final int REQUEST_IMAGE_CAPTURE = 1;
+    //static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int REQUEST_TAKE_PHOTO = 1;
 
     @Override
@@ -70,11 +75,10 @@ public class MainActivity extends AppCompatActivity
         newPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                 //       .setAction("Action", null).show();
 
                 dispatchTakePictureIntent();
-                /*Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                /*
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
                 // Aus dem Buch
                 ContentValues values = new ContentValues();
@@ -119,7 +123,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
-    private void dispatchTakePictureIntent() {
+    void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
@@ -142,13 +146,48 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    /*
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(mCurrentPhotoPath);
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        this.sendBroadcast(mediaScanIntent);
+    }
+
+    private void setPic() {
+        // Get the dimensions of the View
+        int targetW = mImageView.getWidth();
+        int targetH = mImageView.getHeight();
+
+        // Get the dimensions of the bitmap
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+        int photoW = bmOptions.outWidth;
+        int photoH = bmOptions.outHeight;
+
+        // Determine how much to scale down the image
+        int scaleFactor = Math.min(photoW/targetW, photoH/targetH);
+
+        // Decode the image file into a Bitmap sized to fill the View
+        bmOptions.inJustDecodeBounds = false;
+        bmOptions.inSampleSize = scaleFactor;
+        //bmOptions.inPurgeable = true;
+
+        Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+        mImageView.setImageBitmap(bitmap);
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode,resultCode,data);
-        if(requestCode == REQUEST_IMAGE_CAPTURE){
+        if(requestCode == REQUEST_TAKE_PHOTO){
             if(resultCode == RESULT_OK) {
-                try {
+                galleryAddPic();
+                Intent intent = new Intent(this, CropPictureActivity.class);
+                intent.putExtra("imagePath", mCurrentPhotoPath);
+                startActivity(intent);
+                /*try {
                     Bitmap b1 = MediaStore.Images.Media.getBitmap(getContentResolver(), photoURI);
                     // Skalieren auf 300 Pixel
                     float w1 = b1.getWidth();
@@ -157,15 +196,18 @@ public class MainActivity extends AppCompatActivity
                     int h2 = 300;
                     int w2 = (int) (w1 / h1 *(float) h2);
                     Bitmap b2 = Bitmap.createScaledBitmap(b1, w2, h2, false);
-                    ImageView image = (ImageView) findViewById(R.id.imageView);
-                    image.setImageBitmap(b2);
+                    //ImageView image = (ImageView) findViewById(R.id.imageView);
+                    //image.setImageBitmap(b2);
                 }
                 catch (IOException e) {
 
-                }
+                }*/
+
+
             }
         }
-    }*/
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -208,8 +250,6 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_camera) {
             // Handle the camera action
         } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {
 
