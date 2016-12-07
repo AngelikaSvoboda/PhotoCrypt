@@ -22,7 +22,7 @@
         <ImageView
             android:layout_width="match_parent"
             app:srcCompat="@android:color/holo_blue_dark"
-            android:id="@+id/ImageView2"
+            android:id="@+id/scaleImageView"
             android:layout_height="401dp" />
 
         <SeekBar

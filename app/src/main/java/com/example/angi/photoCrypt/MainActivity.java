@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity
         );
 
         // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+        mCurrentPhotoPath = image.getAbsolutePath();
         return image;
     }
 
@@ -77,39 +77,6 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
 
                 dispatchTakePictureIntent();
-                /*
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-                // Aus dem Buch
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-
-                photoURI = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
-
-
-                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-
-                    // Create the File where the photo should go
-                    File photoFile = null;
-                    try {
-                        photoFile = createImageFile();
-                    } catch (IOException ex) {
-                        // Error occurred while creating the File
-
-                    }
-                    // Continue only if the File was successfully created
-                    if (photoFile != null) {
-                        Uri photoURI2 = FileProvider.getUriForFile(this,
-                                "com.example.android.fileprovider",
-                                photoFile);
-                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                        startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
-                    }
-                    //startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                }
-                */
             }
         });
 
@@ -183,7 +150,7 @@ public class MainActivity extends AppCompatActivity
         super.onActivityResult(requestCode,resultCode,data);
         if(requestCode == REQUEST_TAKE_PHOTO){
             if(resultCode == RESULT_OK) {
-                galleryAddPic();
+                //galleryAddPic();
                 Intent intent = new Intent(this, CropPictureActivity.class);
                 intent.putExtra("imagePath", mCurrentPhotoPath);
                 startActivity(intent);

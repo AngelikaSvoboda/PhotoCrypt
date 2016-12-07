@@ -18,11 +18,10 @@
         android:weightSum="1">
 
         <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="359dp"
-            app:srcCompat="@android:color/background_dark"
-            android:id="@+id/mImageView"
-            android:layout_weight="1.01" />
+            android:layout_height="match_parent"
+            android:id="@+id/cropImageView"
+            android:layout_weight="1.01"
+            android:layout_width="match_parent" />
 
         <LinearLayout
             android:orientation="horizontal"
