@@ -153,6 +153,7 @@ public class MainActivity extends AppCompatActivity
                 //galleryAddPic();
                 Intent intent = new Intent(this, CropPictureActivity.class);
                 intent.putExtra("imagePath", mCurrentPhotoPath);
+
                 startActivity(intent);
                 /*try {
                     Bitmap b1 = MediaStore.Images.Media.getBitmap(getContentResolver(), photoURI);
