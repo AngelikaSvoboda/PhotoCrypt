@@ -11,6 +11,7 @@ import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -30,44 +31,62 @@ import java.util.Date;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-
-    String mCurrentPhotoPath;
+    private String mCurrentPhotoPath;
+    private final String storagePath = Environment.getExternalStorageDirectory()+"/photoCrypt";
+    private String imageFileName; //Dateiname ohne Pfad und Dateiendung
     private Uri photoURI;
     ImageView mImageView;
 
-    // Speichern des von der Kamera geschossenes Foto
+    // Speichern des von der Kamera geschossenen Fotos
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        imageFileName = "JPEG_" + timeStamp + "_";
+        //File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+
+        File storageFile = new File(storagePath);
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
-                storageDir      /* directory */
+                storageFile      /* directory */
         );
 
         // Save a file: path for use with ACTION_VIEW intents
         mCurrentPhotoPath = image.getAbsolutePath();
+        imageFileName = image.getName();
         return image;
     }
 
     //static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int REQUEST_TAKE_PHOTO = 1;
 
+    void startConvertToGrayscaleActivity() {
+        Intent intent = new Intent(this, ConvertToGrayscale.class);
+        startActivity(intent);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Ordner für Bilder erstellen
+        File dir = new File(Environment.getExternalStorageDirectory()+"/photoCrypt");
+        if(!dir.exists()) {
+            Log.w("Ordner","Ordner wird erstellt");
+            dir.mkdirs();
+        }
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fromGallery);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+
+                startConvertToGrayscaleActivity();
+
             }
         });
 
@@ -88,6 +107,7 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
     }
 
     void dispatchTakePictureIntent() {
@@ -100,18 +120,25 @@ public class MainActivity extends AppCompatActivity
                 photoFile = createImageFile();
             } catch (IOException ex) {
                 // Error occurred while creating the File
+                Log.w("Error", "Fehler beim Erstellen der Bilddatei");
 
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
-                Uri photoURI = FileProvider.getUriForFile(this,
+                /*photoURI = FileProvider.getUriForFile(this,
                         "com.example.android.fileprovider",
-                        photoFile);
+                        photoFile);*/
+                photoURI = Uri.fromFile(photoFile);
+
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
         }
     }
+    /*void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+    }*/
 
     private void galleryAddPic() {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
@@ -152,25 +179,15 @@ public class MainActivity extends AppCompatActivity
             if(resultCode == RESULT_OK) {
                 //galleryAddPic();
                 Intent intent = new Intent(this, CropPictureActivity.class);
-                intent.putExtra("imagePath", mCurrentPhotoPath);
+                //Intent intent = new Intent(this, ConvertToGrayscale.class);
+                Bundle b = new Bundle();
+                b.putString("imagePath", mCurrentPhotoPath);
+                b.putString("fileName", imageFileName);
+                Log.w("fileName", imageFileName);
+                Log.w("imagePath", mCurrentPhotoPath);
+                intent.putExtras(b);
 
                 startActivity(intent);
-                /*try {
-                    Bitmap b1 = MediaStore.Images.Media.getBitmap(getContentResolver(), photoURI);
-                    // Skalieren auf 300 Pixel
-                    float w1 = b1.getWidth();
-                    float h1 = b1.getHeight();
-
-                    int h2 = 300;
-                    int w2 = (int) (w1 / h1 *(float) h2);
-                    Bitmap b2 = Bitmap.createScaledBitmap(b1, w2, h2, false);
-                    //ImageView image = (ImageView) findViewById(R.id.imageView);
-                    //image.setImageBitmap(b2);
-                }
-                catch (IOException e) {
-
-                }*/
-
 
             }
         }

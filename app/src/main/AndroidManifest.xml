@@ -9,9 +9,10 @@
         android:required="true" />
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
-    <android:uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <android:uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_INTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -29,7 +30,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".selectPictureFrame" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -41,7 +41,8 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <activity android:name=".CropPictureActivity"></activity>
+        <activity android:name=".CropPictureActivity" />
+        <activity android:name=".ConvertToGrayscale"></activity>
     </application>
 
 </manifest>

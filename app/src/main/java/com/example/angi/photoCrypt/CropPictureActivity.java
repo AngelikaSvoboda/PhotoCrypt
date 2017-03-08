@@ -4,8 +4,10 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.Image;
 import android.net.Uri;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,7 +23,9 @@ public class CropPictureActivity extends AppCompatActivity {
 
     private ImageView mImageView;
     private String mCurrentPhotoPath;
+    private String imageFileName;
     public static final int PIC_CROP = 10;
+    private Uri photoUri;
 
     private void setPic() {
 
@@ -29,7 +33,7 @@ public class CropPictureActivity extends AppCompatActivity {
 
         if(mImageView == null) {
             System.err.print("FEHLER");
-            Log.e("imageview", "fehler");
+            Log.e("imageview", "Nicht gefunden");
         }
         else {
             // Get the dimensions of the View
@@ -60,7 +64,11 @@ public class CropPictureActivity extends AppCompatActivity {
     }
 
     void callPictureScalerActivity() {
-        Intent intent = new Intent(this, selectPictureFrame.class);
+        Intent intent = new Intent(this, ConvertToGrayscale.class);
+        Bundle b = new Bundle();
+        b.putString("imagePath", mCurrentPhotoPath);
+        b.putString("fileName", imageFileName);
+        intent.putExtras(b);
         startActivity(intent);
     }
 
@@ -68,8 +76,15 @@ public class CropPictureActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent i = getIntent();
-        mCurrentPhotoPath = i.getStringExtra("imagePath");
+        Bundle b = i.getExtras();
+        //mCurrentPhotoPath = i.getStringExtra("imagePath");
+        //imageFileName = i.getStringExtra("fileName");
+        mCurrentPhotoPath = b.getString("imagePath");
+        imageFileName = b.getString("fileName");
+
+        //photoUri = i.getData();
         Log.w("Fotospeicherort", mCurrentPhotoPath);
+        Log.w("Dateiname", imageFileName);
 
         setContentView(R.layout.activity_crop_picture);
         //setPic();
@@ -89,7 +104,6 @@ public class CropPictureActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 callPictureScalerActivity();
-
             }
         });
     }
@@ -97,14 +111,16 @@ public class CropPictureActivity extends AppCompatActivity {
     private void cropPicture() {
 
         try {
-            File file = File.createTempFile(mCurrentPhotoPath, ".jpg");
+            Log.w("CropPicture", "Rufe CropPicture() auf");
+            File file = File.createTempFile(imageFileName, ".jpg", Environment.getExternalStorageDirectory());
             Uri picUri = Uri.fromFile(file);
-            Uri picUri2 = Uri.parse(mCurrentPhotoPath);
+            //Uri picUri2 = Uri.parse(mCurrentPhotoPath);
+            //Uri picUri = picture;
 
             //call the standard crop action intent (the user device may not support it)
             Intent cropIntent = new Intent("com.android.camera.action.CROP");
             //indicate image type and Uri
-            cropIntent.setData(picUri2);
+            cropIntent.setData(picUri);
             //set crop properties
             cropIntent.putExtra("crop", "true");
             //indicate aspect of desired crop
@@ -127,28 +143,40 @@ public class CropPictureActivity extends AppCompatActivity {
             String errorMessage = "Whoops - your device doesn't support the crop action!";
             Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT);
             toast.show();
+            Log.w("Crop", "Crop existiert nicht.");
         }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == PIC_CROP) {
-            //get the returned data
-            Bundle extras = data.getExtras();
-            //get the cropped bitmap
-            Bitmap thePic = extras.getParcelable("data");
-            //retrieve a reference to the ImageView
-            ImageView picView = (ImageView)findViewById(R.id.cropImageView);
-            //display the returned cropped image
-            picView.setImageBitmap(thePic);
+            if(data != null) {
+                //get the returned data
+                Bundle extras = data.getExtras();
+                //get the cropped bitmap
+                Bitmap thePic = extras.getParcelable("data");
+                //retrieve a reference to the ImageView
+                ImageView picView = (ImageView) findViewById(R.id.cropImageView);
+                //display the returned cropped image
+                picView.setImageBitmap(thePic);
+            }
+            else
+            {
+                /*Bitmap b = BitmapFactory.decodeFile(mCurrentPhotoPath);
+                ImageView imageView = (ImageView) findViewById(R.id.cropImageView);
+                imageView.setImageBitmap(b);*/
+                //setPic();
+                scaleImage.setPic((ImageView)findViewById(R.id.cropImageView), mCurrentPhotoPath);
+            }
         }
     }
 
-    @Override
+    /*@Override
     public void onWindowFocusChanged(boolean focus) {
         super.onWindowFocusChanged(focus);
         //Nachdem die Höhe und Breite für alle Views berechnet/festgelegt ist, kann
         // getWidth() bzw getHeight() aufgerufen werden, in onCreate aber noch nicht
-        setPic();
-    }
+        scaleImage.setPic((ImageView)findViewById(R.id.cropImageView), mCurrentPhotoPath);
+        Log.w("onWindowFocusChanged", "wurde aufgerufen, setPic() wurde aufgerufen");
+    }*/
 }
