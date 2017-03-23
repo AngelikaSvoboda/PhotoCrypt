@@ -41,13 +41,13 @@ public class MainActivity extends AppCompatActivity
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        imageFileName = "JPEG_" + timeStamp + "_";
+        imageFileName = "PNG_" + timeStamp + "_";
         //File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 
         File storageFile = new File(storagePath);
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
+                ".png",         /* suffix */
                 storageFile      /* directory */
         );
 
@@ -72,9 +72,16 @@ public class MainActivity extends AppCompatActivity
 
         //Ordner für Bilder erstellen
         File dir = new File(Environment.getExternalStorageDirectory()+"/photoCrypt");
+        File temp = new File(dir.getAbsolutePath()+"/temp");
         if(!dir.exists()) {
-            Log.w("Ordner","Ordner wird erstellt");
+            Log.w("Ordner photoCrypt","Ordner wird erstellt");
             dir.mkdirs();
+        }
+        //Ordner für temporäre Graustufenbilder erstellen
+
+        if(!temp.exists()) {
+            Log.w("Ordner temp","Ordner wird erstellt");
+            temp.mkdirs();
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -178,8 +185,8 @@ public class MainActivity extends AppCompatActivity
         if(requestCode == REQUEST_TAKE_PHOTO){
             if(resultCode == RESULT_OK) {
                 //galleryAddPic();
-                Intent intent = new Intent(this, CropPictureActivity.class);
-                //Intent intent = new Intent(this, ConvertToGrayscale.class);
+                //Intent intent = new Intent(this, CropPictureActivity.class);
+                Intent intent = new Intent(this, ConvertToGrayscale.class);
                 Bundle b = new Bundle();
                 b.putString("imagePath", mCurrentPhotoPath);
                 b.putString("fileName", imageFileName);
