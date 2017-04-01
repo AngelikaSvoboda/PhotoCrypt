@@ -1,6 +1,8 @@
 package com.example.angi.photoCrypt;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -11,6 +13,7 @@ import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -31,6 +34,7 @@ import java.util.Date;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private final String savedSettings = "settings";
     private String mCurrentPhotoPath;
     private final String storagePath = Environment.getExternalStorageDirectory()+"/photoCrypt";
     private String imageFileName; //Dateiname ohne Pfad und Dateiendung
@@ -83,6 +87,20 @@ public class MainActivity extends AppCompatActivity
             Log.w("Ordner temp","Ordner wird erstellt");
             temp.mkdirs();
         }
+
+        //Einstellungen (Server-IP, Bildgröße,..) abrufbar machen.
+        SharedPreferences settings = getSharedPreferences(savedSettings, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        //  Standard für die Dastellung im Optionsmenü festlegen
+        editor.putInt("Breite", 150);
+        editor.putInt("Höhe", 200);
+        editor.putString("IP", "172.0.0.1");
+        editor.putInt("Port", 8000);
+
+        final TelephonyManager tm = (TelephonyManager) getBaseContext().getSystemService(Context.TELEPHONY_SERVICE);
+        String s = tm.getDeviceId();
+        editor.putString("TelefonId", s);
+        editor.commit();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -244,7 +262,8 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_manage) {
-
+            Intent intent = new Intent(this, Settings.class);
+            startActivity(intent);
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {

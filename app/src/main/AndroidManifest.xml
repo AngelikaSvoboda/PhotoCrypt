@@ -13,6 +13,8 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_INTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -42,7 +44,8 @@
         </provider>
 
         <activity android:name=".CropPictureActivity" />
-        <activity android:name=".ConvertToGrayscale"></activity>
+        <activity android:name=".ConvertToGrayscale" />
+        <activity android:name=".Settings"/>
     </application>
 
 </manifest>

@@ -21,6 +21,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.net.Socket;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -90,6 +95,17 @@ public class ConvertToGrayscale extends AppCompatActivity {
                     os.close();
                     MediaStore.Images.Media.insertImage(getContentResolver(),file.getAbsolutePath(),file.getName(),file.getName());
 
+                    /*int width = scaledPicture.getWidth(),  height = scaledPicture.getHeight();
+
+                    for (int x=0; x<height; x++) {
+                        for(int y=0; y<width; y++) {
+
+                        }
+                    }*/
+                    // TCP Verbindung aufbauen und übertragen
+                    sendPicture();
+
+
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -100,16 +116,17 @@ public class ConvertToGrayscale extends AppCompatActivity {
                     File finalPicture = File.createTempFile("temp", ".jpg", storageFinalPicture);
                 */
 
+
             }
         });
-        //threshhold = s.getProgress();
 
-        /*
-        ImageView mimageView = (ImageView) findViewById(R.id.scalablePicture);
+        //ImageView oldPicture = (ImageView) findViewById(R.id.scalablePicture);
 
-        mimageView.setImageBitmap(originalPicture);*/
-        ImageView oldPicture = (ImageView) findViewById(R.id.scalablePicture);
+    }
 
+    private void sendPicture() {
+
+        Socket client = new Socket();
     }
 
     //Bild runterskalieren, Graustufen erzeugen
