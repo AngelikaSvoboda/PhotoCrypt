@@ -6,8 +6,10 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
@@ -89,18 +91,23 @@ public class MainActivity extends AppCompatActivity
         }
 
         //Einstellungen (Server-IP, Bildgröße,..) abrufbar machen.
-        SharedPreferences settings = getSharedPreferences(savedSettings, 0);
+        SharedPreferences settings = getSharedPreferences("settings", 0);
         SharedPreferences.Editor editor = settings.edit();
-        //  Standard für die Dastellung im Optionsmenü festlegen
-        editor.putInt("Breite", 150);
-        editor.putInt("Höhe", 200);
-        editor.putString("IP", "172.0.0.1");
-        editor.putInt("Port", 8000);
+        if(!settings.contains("Breite")) {
+            //  Standard für die Dastellung im Optionsmenü festlegen
+            editor.putInt("Breite", 150);
+            editor.putInt("Höhe", 200);
+            editor.putString("IP", "172.0.0.1");
+            editor.putInt("Port", 8000);
 
-        final TelephonyManager tm = (TelephonyManager) getBaseContext().getSystemService(Context.TELEPHONY_SERVICE);
-        String s = tm.getDeviceId();
-        editor.putString("TelefonId", s);
-        editor.commit();
+            String s = Build.MODEL;
+            Log.w("TelefonId", s);
+            editor.putString("TelefonId", s);
+            editor.commit();
+        }
+
+
+        //settings = PreferenceManager.setDefaultValues(this, R.xml.settings, false);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

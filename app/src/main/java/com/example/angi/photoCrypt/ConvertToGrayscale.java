@@ -1,6 +1,7 @@
 package com.example.angi.photoCrypt;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -24,6 +25,7 @@ import android.widget.SeekBar;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.net.InetAddress;
 import java.net.Socket;
 
 import java.io.File;
@@ -31,6 +33,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.SocketAddress;
 
 public class ConvertToGrayscale extends AppCompatActivity {
 
@@ -125,8 +128,19 @@ public class ConvertToGrayscale extends AppCompatActivity {
     }
 
     private void sendPicture() {
+        SharedPreferences settings = getSharedPreferences("settings", 0);
+        String serverIp = settings.getString("IP", "");
+        int serverPort = settings.getInt("Port", 0);
 
-        Socket client = new Socket();
+        Socket client = null;
+        try {
+            client = new Socket(serverIp, serverPort);
+            //client.connect();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     //Bild runterskalieren, Graustufen erzeugen

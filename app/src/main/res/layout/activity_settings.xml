@@ -25,8 +25,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="12dp"
-                    android:text="Bildgröße:"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+                    android:text="Bildgröße:" />
             </TableRow>
 
             <TableRow
@@ -50,12 +49,6 @@
                     android:inputType="number"
                     android:text="150" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                </LinearLayout>
             </TableRow>
 
             <TableRow
@@ -79,13 +72,6 @@
                     android:inputType="number"
                     android:text="150" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                </LinearLayout>
-
             </TableRow>
 
             <TableRow
@@ -97,8 +83,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="12dp"
-                    android:text="Server:"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+                    android:text="Server:" />
 
             </TableRow>
 
@@ -157,8 +142,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:padding="10dp"
-                    android:text="Senderinformation:"
-                    android:theme="@style/TextAppearance.AppCompat.Body1" />
+                    android:text="Senderinformation:" />
             </TableRow>
 
             <TableRow
@@ -182,6 +166,10 @@
                     android:inputType="text"
                     android:text="Nexus xyz" />
             </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
         </TableLayout>
     </ScrollView>
