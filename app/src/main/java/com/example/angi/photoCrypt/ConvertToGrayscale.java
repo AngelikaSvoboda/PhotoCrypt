@@ -1,5 +1,7 @@
 package com.example.angi.photoCrypt;
 
+import android.app.IntentService;
+import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -12,8 +14,11 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.Image;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
+import android.os.IBinder;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +30,7 @@ import android.widget.SeekBar;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
@@ -41,6 +47,48 @@ public class ConvertToGrayscale extends AppCompatActivity {
     private Uri originalPictureUri;
     private Bitmap originalPicture, scaledPicture;
     private int threshhold;
+
+    /*public class SendPicture extends IntentService
+    {
+        public SendPicture(String name) {
+            super(name);
+        }
+
+        @Override
+        protected void onHandleIntent(@Nullable Intent intent) {
+            Bundle b = intent.getBundleExtra("info");
+            String serverIp = b.getString("Ip");
+            int serverPort = b.getInt("port");
+            String filePath = b.getString("filePath");
+            String phoneId = b.getString("phoneId");
+
+            try {
+                Log.w("Socket","Connecting...");
+                Socket client = null;
+                try {
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    scaledPicture.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    byte[] imgByte = stream.toByteArray();
+
+                    InetAddress serverAdr = InetAddress.getByName(serverIp);
+                    client = new Socket(serverAdr, serverPort);
+                    OutputStream output = client.getOutputStream();
+                    output.write(imgByte);
+                    output.flush();
+                    //client.connect();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                client.close();
+            }
+            catch (Exception e) {
+                Log.e("Socket", "Fehler bei Socket");
+                e.printStackTrace();
+            }
+
+        }
+    }*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,15 +179,39 @@ public class ConvertToGrayscale extends AppCompatActivity {
         SharedPreferences settings = getSharedPreferences("settings", 0);
         String serverIp = settings.getString("IP", "");
         int serverPort = settings.getInt("Port", 0);
+        String phoneId = settings.getString("TelefonId", "phone");
+        Intent sendIntent = new Intent(this, SendPictureService.class);
+        Bundle b = new Bundle();
+        b.putString("ip", serverIp);
+        b.putInt("port", serverPort);
+        b.putString("filePath", fileName);
+        b.putString("phoneId", phoneId);
+        sendIntent.putExtras(b);
+        startService(sendIntent);
+        /*try {
+            Log.w("Socket","Connecting...");
+            Socket client = null;
+            try {
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                scaledPicture.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                byte[] imgByte = stream.toByteArray();
 
-        Socket client = null;
-        try {
-            client = new Socket(serverIp, serverPort);
-            //client.connect();
+                InetAddress serverAdr = InetAddress.getByName(serverIp);
+                client = new Socket(serverAdr, serverPort);
+                OutputStream output = client.getOutputStream();
+                output.write(imgByte);
+                output.flush();
+                //client.connect();
 
-        } catch (IOException e) {
-            e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            client.close();
         }
+        catch (Exception e) {
+            Log.e("Socket", "Fehler bei Socket");
+            e.printStackTrace();
+        }*/
 
     }
 

@@ -45,8 +45,13 @@
 
         <activity android:name=".CropPictureActivity" />
         <activity android:name=".ConvertToGrayscale" />
-        <activity android:name=".Settings"
+        <activity
+            android:name=".Settings"
             android:windowSoftInputMode="adjustPan" />
+
+        <service
+            android:name=".SendPictureService"
+            android:enabled="true" />
     </application>
 
 </manifest>
