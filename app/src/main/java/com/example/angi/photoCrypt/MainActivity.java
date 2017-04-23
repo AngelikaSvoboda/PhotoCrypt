@@ -1,8 +1,10 @@
 package com.example.angi.photoCrypt;
 
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -12,6 +14,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -34,17 +37,28 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ *
+ */
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private final String savedSettings = "settings";
+    /**  **/
+    static final int REQUEST_PICK_IMAGE = 1;
+    static final int REQUEST_TAKE_PHOTO = 2;
+
     private String mCurrentPhotoPath;
     private final String storagePath = Environment.getExternalStorageDirectory()+"/photoCrypt";
     private String imageFileName; //Dateiname ohne Pfad und Dateiendung
-    private Uri photoURI;
-    ImageView mImageView;
+    //private Uri photoURI;
 
-    // Speichern des von der Kamera geschossenen Fotos
+    /**
+     * Speichern des von der Kamera geschossenen Fotos. Es wird ein neues File erzeugt und erhält als
+     * Dateinamen einen timeStamp. Der absolute Pfad des Fotos wird in der Klassenvariable @mCurrentPhotoPath
+     * und der Name der Bilddatei in @imageFileName gespeichert.
+     * @return Bild als File-Objekt
+     * @throws IOException Fehler beim Erstellen des Files
+     */
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -64,14 +78,28 @@ public class MainActivity extends AppCompatActivity
         return image;
     }
 
-    //static final int REQUEST_IMAGE_CAPTURE = 1;
-    static final int REQUEST_TAKE_PHOTO = 1;
-
+    /**
+     * Erzeugt einen Intent, der die Activity zum Skalieren der Graustufen startet
+     */
     void startConvertToGrayscaleActivity() {
         Intent intent = new Intent(this, ConvertToGrayscale.class);
+        Bundle b = new Bundle();
+        b.putString("imagePath", mCurrentPhotoPath);
+        b.putString("fileName", imageFileName);
+        Log.w("fileName", imageFileName);
+        Log.w("imagePath", mCurrentPhotoPath);
+        intent.putExtras(b);
+
         startActivity(intent);
     }
 
+    /**
+     * Die erste Funktion die bei Start der App aufgerufen wird. Ist es der erste Start der App, werden
+     * die benötigten Ordner erstellt und Standardeinstellungen im @{@link SharedPreferences} -Objekt
+     * gespeichert. Danach wird die Funktionalität der Buttons, Toolbar und Menü hinzugefügt.
+     * @param savedInstanceState Bundle das beim Aufruf der Funktion übergeben wurde, was zusätzliche
+     *                           Variablen oder Objekte enthalten kann. Für die Mainactivity ist dieses leer.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,7 +119,7 @@ public class MainActivity extends AppCompatActivity
             temp.mkdirs();
         }
 
-        //Einstellungen (Server-IP, Bildgröße,..) abrufbar machen.
+        // Bei erstem Start der App Standardeinstellungen festlegen
         SharedPreferences settings = getSharedPreferences("settings", 0);
         SharedPreferences.Editor editor = settings.edit();
         if(!settings.contains("Breite")) {
@@ -118,7 +146,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
 
-                startConvertToGrayscaleActivity();
+                galleryChooserIntent();
 
             }
         });
@@ -128,7 +156,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
 
-                dispatchTakePictureIntent();
+                takePictureIntent();
             }
         });
 
@@ -143,7 +171,10 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    void dispatchTakePictureIntent() {
+    /**
+     *
+     */
+    private void takePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
@@ -161,17 +192,25 @@ public class MainActivity extends AppCompatActivity
                 /*photoURI = FileProvider.getUriForFile(this,
                         "com.example.android.fileprovider",
                         photoFile);*/
-                photoURI = Uri.fromFile(photoFile);
+                Uri photoURI = Uri.fromFile(photoFile);
 
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
         }
     }
-    /*void dispatchTakePictureIntent() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
-    }*/
+
+    /**
+     * Funktion zum Auswählen eines Bildes aus der Galerie des Handys. Die Funktion wird nur durch Auswahl
+     * des Menüpunkts "Aus Galerie" oder über den unteren rechten Button im Hauptfenster aufgerufen.
+     * Dabei erstellt sie wie beim
+     */
+    private void galleryChooserIntent() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQUEST_PICK_IMAGE);
+    }
 
     private void galleryAddPic() {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
@@ -181,52 +220,65 @@ public class MainActivity extends AppCompatActivity
         this.sendBroadcast(mediaScanIntent);
     }
 
-    private void setPic() {
-        // Get the dimensions of the View
-        int targetW = mImageView.getWidth();
-        int targetH = mImageView.getHeight();
-
-        // Get the dimensions of the bitmap
-        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        bmOptions.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-        int photoW = bmOptions.outWidth;
-        int photoH = bmOptions.outHeight;
-
-        // Determine how much to scale down the image
-        int scaleFactor = Math.min(photoW/targetW, photoH/targetH);
-
-        // Decode the image file into a Bitmap sized to fill the View
-        bmOptions.inJustDecodeBounds = false;
-        bmOptions.inSampleSize = scaleFactor;
-        //bmOptions.inPurgeable = true;
-
-        Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-        mImageView.setImageBitmap(bitmap);
-    }
-
+    /**
+     * Diese Funktion wird automatisch aufgerufen, wenn @startActivityForResult beendet wird. Hier
+     * wird nun unterschieden, welche Aktion nun getätigt wurde und wie die Daten weiterverarbeitet werden.
+     *
+     * @param requestCode @REQUEST_TAKE_PHOTO falls das Foto von der Kamera aufgenommen wurde. @REQUEST_PICK_IMAGE
+     *                    falls ein Bild aus der Gallerie ausgewählt wurde
+     * @param resultCode Wenn die Aktion vorher nicht abgebrochen wurde, wird @RESULT_OK zurückgegeben, @RESULT_CANCELLED sonst
+     * @param data übergebene Daten der Aktion. Wenn ein Bild aus der Gallerie gewählt wurde, enthält @data die Uri des Bildes
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode,resultCode,data);
+        // Nutzer hat selbst ein Foto geschossen
         if(requestCode == REQUEST_TAKE_PHOTO){
             if(resultCode == RESULT_OK) {
                 //galleryAddPic();
                 //Intent intent = new Intent(this, CropPictureActivity.class);
-                Intent intent = new Intent(this, ConvertToGrayscale.class);
-                Bundle b = new Bundle();
-                b.putString("imagePath", mCurrentPhotoPath);
-                b.putString("fileName", imageFileName);
-                Log.w("fileName", imageFileName);
-                Log.w("imagePath", mCurrentPhotoPath);
-                intent.putExtras(b);
-
-                startActivity(intent);
-
+                startConvertToGrayscaleActivity();
             }
+        }
+        // Nutzer sucht Foto aus Galerie aus
+        else if(requestCode == REQUEST_PICK_IMAGE && resultCode == RESULT_OK) {
+            Uri selectedImageUri = data.getData();
+            String s = selectedImageUri.getPath();
+
+            // Ermittlung des Pfads aus der Uri des Bildes
+            String filePath = "";
+            String wholeID = DocumentsContract.getDocumentId(selectedImageUri);
+            // Split at colon, use second item in the array
+            String id = wholeID.split(":")[1];
+            String[] column = { MediaStore.Images.Media.DATA };
+            // where id is equal to
+            String sel = MediaStore.Images.Media._ID + "=?";
+            Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    column, sel, new String[]{ id }, null);
+            int columnIndex = cursor.getColumnIndex(column[0]);
+            if (cursor.moveToFirst()) {
+                filePath = cursor.getString(columnIndex);
+            }
+
+            Log.w("Pfad", filePath);
+            cursor.close();
+
+            // Dateinamen ohne Pfad und Endung speichern
+            int begin = filePath.lastIndexOf("/"); // ab da fängt der Dateiname an
+            String split = filePath.substring(begin+1, filePath.length()-4); // .jpg und .png abgetrennt
+            Log.w("Datei", split);
+
+            mCurrentPhotoPath = filePath;
+            imageFileName = split;
+            startConvertToGrayscaleActivity();
+
         }
     }
 
-
+    /**
+     * Handler für die Zurück-Taste des Handys. Schließt das Menü wenn dieses offen ist. Ansonsten
+     * schließt es die App, wenn das Hauptfenster offen ist
+     */
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -237,6 +289,11 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Erstellt den Menüreiter.
+     * @param menu das Menü
+     * @return true wenn das Menü erstellt wird
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -244,6 +301,13 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    /**
+     * Die Funktion wird aufgerufen, wenn der Button @action_settings gedrückt wurde und eine Option
+     * gewählt wird. Hier steht die Option "Einstellung" zur Verfügung, die, wenn gedrückt, die @{@link Settings}
+     * startet.
+     * @param item ID der gewählten Option
+     * @return true nachdem das Einstellungsmenü geschlossen wird.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -251,14 +315,23 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
+        // Starte Einstellungsfenster
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, Settings.class);
+            startActivity(intent);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Die Funktion verarbeitet, welcher Menüpunkt in der Navigation-View gewählt wurde und startet
+     * dementsprechend die passende Aktion. Über die Navigation-View können auf die Aktionen Bild aufnehmen
+     * oder aus Gallerie auswählen sowie die Einstellungen zugegriffen werden.
+     * @param item Ausgewählter Punkt im Menü
+     * @return true sobald die Navigation-View geschlossen wird
+     */
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -266,10 +339,13 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-            // Handle the camera action
+            // Starte Kamera
+            takePictureIntent();
         } else if (id == R.id.nav_gallery) {
-
+            // Suche Bild aus Gallerie aus
+            galleryChooserIntent();
         } else if (id == R.id.nav_manage) {
+            // Activity für Einstellungen starten
             Intent intent = new Intent(this, Settings.class);
             startActivity(intent);
         } else if (id == R.id.nav_share) {

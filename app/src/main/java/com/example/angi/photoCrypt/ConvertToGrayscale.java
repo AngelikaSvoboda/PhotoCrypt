@@ -41,6 +41,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.SocketAddress;
 
+/**
+ * Activity zum Erstellen eines Schwarzweißbildes, das für den Verschlüsselungsalgorithmus nötig ist.
+ * Hier kann der Nutzer mithilfe eines Schiebereglers einen Schwellwert festlegen um den Kontrast des
+ * Bildes anzupassen. Das Bild wird zuerst in normale Graufstufen berechnet, bevor dann das binäre
+ * Schwarzweißbild angepasst werden kann. Danach kann der Nutzer es dann an den Server schicken.
+ */
 public class ConvertToGrayscale extends AppCompatActivity {
 
     private String fileName, photoPath;
@@ -90,6 +96,10 @@ public class ConvertToGrayscale extends AppCompatActivity {
         }
     }*/
 
+    /**
+     * Erstellt die Funktionalität der Buttons und der SeekBar.
+     * @param savedInstanceState Bundle mit Dateinamen und -pfad des Bildes
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,8 +115,6 @@ public class ConvertToGrayscale extends AppCompatActivity {
         threshhold = 128;
         scaledPicture = changeGrayscale(threshhold);
         System.out.println(photoPath);
-        //Log.w("Pfad", photoPath);
-
 
         setContentView(R.layout.activity_convert_to_grayscale);
         SeekBar s = (SeekBar) findViewById(R.id.thresholdbar);
@@ -120,21 +128,17 @@ public class ConvertToGrayscale extends AppCompatActivity {
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
+            public void onStartTrackingTouch(SeekBar seekBar) {}
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
+            public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
         Button forwardButton = (Button) findViewById(R.id.buttonOk2);
         forwardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // scaledPicture soll nun gespeichert werden, umgewandelt als JSON Datei und dann zum
+                // scaledPicture soll nun gespeichert werden und dann an den
                 // Server übertragen werden
 
                 File file = new File(Environment.getExternalStorageDirectory()+"/photoCrypt/temp", "conv_" + fileName);
@@ -146,16 +150,8 @@ public class ConvertToGrayscale extends AppCompatActivity {
                     os.close();
                     MediaStore.Images.Media.insertImage(getContentResolver(),file.getAbsolutePath(),file.getName(),file.getName());
 
-                    /*int width = scaledPicture.getWidth(),  height = scaledPicture.getHeight();
-
-                    for (int x=0; x<height; x++) {
-                        for(int y=0; y<width; y++) {
-
-                        }
-                    }*/
                     // TCP Verbindung aufbauen und übertragen
                     sendPicture();
-
 
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -163,18 +159,15 @@ public class ConvertToGrayscale extends AppCompatActivity {
                 catch (IOException e) {
                     e.printStackTrace();
                 }
-                /*
-                    File finalPicture = File.createTempFile("temp", ".jpg", storageFinalPicture);
-                */
-
-
             }
         });
-
-        //ImageView oldPicture = (ImageView) findViewById(R.id.scalablePicture);
-
     }
 
+    /**
+     * Funktion zur Übertragung des Bildes an den Python-Server. Die IP-Adresse und Port werden aus der
+     * {@link SharedPreferences} -Datei entnommen und es wird ein Service gestartet, der die Übertragung
+     * in einem neuem Thread durchführt.
+     */
     private void sendPicture() {
         SharedPreferences settings = getSharedPreferences("settings", 0);
         String serverIp = settings.getString("IP", "");
@@ -215,14 +208,21 @@ public class ConvertToGrayscale extends AppCompatActivity {
 
     }
 
-    //Bild runterskalieren, Graustufen erzeugen
+    /**
+     * Funktion zur einmaligen Berechnung eines Graufstufenbildes, dass auf die eingestellten Maße
+     * skaliert wird.
+     * @param threshhold Schwellwert zwischen 0 und 255
+     * @param optHeight einzustellende Höhe des Bildes
+     * @param optWidth einzustellende Breite des Bildes
+     * @return schwarzweiß skaliertes Bild
+     */
     public Bitmap toGrayscale(int threshhold, int optHeight, int optWidth)
     {
         int width, height;
         height = originalPicture.getHeight();
         width = originalPicture.getWidth();
 
-        Bitmap temp = Bitmap.createScaledBitmap(originalPicture,optWidth, optHeight, true);
+        Bitmap temp = Bitmap.createScaledBitmap(originalPicture, optWidth, optHeight, true);
 
         Bitmap bmpGrayscale = Bitmap.createBitmap(optWidth, optHeight, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bmpGrayscale);
@@ -236,7 +236,12 @@ public class ConvertToGrayscale extends AppCompatActivity {
         return bmpGrayscale;
     }
 
-
+    /**
+     * Die Funktion berechnet die Pixelfarbe des Bilds mithilfe des @threshhold. Wenn der originale
+     * Grauwert unter dem Wert liegt, ist das Pixel weiß, ansonsten schwarz.
+     * @param threshhold Schwellwert des Reglers (Ganzzahl zwischen 0-255)
+     * @return Das neu skalierte Schwarzweißbild
+     */
     public Bitmap changeGrayscale(int threshhold)
     {
 
@@ -252,7 +257,7 @@ public class ConvertToGrayscale extends AppCompatActivity {
             for(int j=0; j<height; j++)
             {
                 // Grauwert abfragen: getPixel gibt negative Werte zurück, aus denen man RGB Werte
-                // berechnen kann. Da bei Grauwerten alle Werte gleich sind, kann man hier bpsw. den
+                // berechnen kann. Da bei Grauwerten alle Werte gleich sind, muss man hier bpsw. den
                 // roten (also grauen) Anteil errechnen, der einem Wert 0-255 entspricht
                 int pixel = Color.red(scaledPicture.getPixel(i,j));
                 //System.out.print(pixel + " ");
@@ -270,17 +275,20 @@ public class ConvertToGrayscale extends AppCompatActivity {
         return changedBitmap;
     }
 
+    /**
+     * Die Funktion wird immer dann aufgerufen, wenn sich der Fokus auf den Bildschirm ändert (entweder
+     * durch den ersten Aufruf oder wenn das Handy gekippt wird. Das wird benötigt, da dass Bild was
+     * angezeigt werden soll, sich an die Größe der ImageView richten muss. Die Maße sind beim Erstellen
+     * in OnCreate() noch nicht bekannt, sondern erst nach Beenden der Funktion, daher wird es in
+     * diese Methode ausgelagert.
+     * @param focus true wenn Fenster im Fokus, false sonst
+     */
     public void onWindowFocusChanged(boolean focus) {
         super.onWindowFocusChanged(focus);
         //Nachdem die Höhe und Breite für alle Views berechnet/festgelegt ist, kann
         // getWidth() bzw getHeight() aufgerufen werden, in onCreate aber noch nicht
-        //originalPicture = toGrayscale(threshhold, 200, 150);
-        //originalPicture = scaleImage.setPic((ImageView) findViewById(R.id.scalablePicture), photoPath);
         ImageView mimageView = (ImageView) findViewById(R.id.scalablePicture);
         mimageView.setImageBitmap(scaledPicture);
-        Log.w("onWindowFocusChanged", "wurde aufgerufen, setPic() wurde aufgerufen");
-
-
     }
 
 }

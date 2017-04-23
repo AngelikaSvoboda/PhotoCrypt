@@ -16,15 +16,18 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 /**
- * Created by Angi on 14.04.2017.
+ *
  */
-
 public class SendPictureService extends IntentService {
 
     public SendPictureService() {
         super("SendPictureService");
     }
 
+    /**
+     *
+     * @param intent
+     */
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         Bundle b = intent.getExtras();
