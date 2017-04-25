@@ -13,7 +13,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 /**
- * Created by Angi on 27.03.2017.
+ * Diese Klasse stellt das Einstellungsmenü dar, wo der Nutzer die Größe der zu verschlüsselten Bilder
+ * und die IP-Adresse und Port des Servers einstellen kann.
  */
 
 public class Settings extends AppCompatActivity{
