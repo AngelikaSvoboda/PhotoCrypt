@@ -6,7 +6,7 @@ import android.media.Image;
 import android.widget.ImageView;
 
 /**
- * Created by Angi on 14.02.2017.
+ * Klasse zum Skalieren von Bitmaps auf die Größe der Imageview. Die enthaltende
  */
 
 public class scaleImage {

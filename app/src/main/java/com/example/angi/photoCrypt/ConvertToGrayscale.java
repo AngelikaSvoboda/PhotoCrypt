@@ -26,6 +26,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -148,7 +149,7 @@ public class ConvertToGrayscale extends AppCompatActivity {
                     scaledPicture.compress(Bitmap.CompressFormat.PNG, 100, os);
                     os.flush();
                     os.close();
-                    MediaStore.Images.Media.insertImage(getContentResolver(),file.getAbsolutePath(),file.getName(),file.getName());
+                    //MediaStore.Images.Media.insertImage(getContentResolver(),file.getAbsolutePath(),file.getName(),file.getName());
 
                     // TCP Verbindung aufbauen und übertragen
                     sendPicture();
@@ -159,6 +160,15 @@ public class ConvertToGrayscale extends AppCompatActivity {
                 catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+        });
+
+        Button backwardButton = (Button) findViewById(R.id.buttonBack2);
+        backwardButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setResult(RESULT_CANCELED);
+                finish();
             }
         });
     }
@@ -181,6 +191,8 @@ public class ConvertToGrayscale extends AppCompatActivity {
         b.putString("phoneId", phoneId);
         sendIntent.putExtras(b);
         startService(sendIntent);
+
+        finish();
         /*try {
             Log.w("Socket","Connecting...");
             Socket client = null;

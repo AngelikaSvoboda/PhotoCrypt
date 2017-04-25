@@ -6,7 +6,7 @@
 
     <string name="action_settings">Einstellungen</string>
     <string name="title_activity_settings">Einstellungen</string>
-
-    <!-- String für die Standardeinstellungen -->
+    <string name="mainIntroText">Willkommen bei PhotoCrypt! Um ein Bild zu verschlüsseln, wähle unten
+    eine der Tasten aus, um ein Foto zu machen oder aus der Galerie auszuwählen.</string>
 
 </resources>

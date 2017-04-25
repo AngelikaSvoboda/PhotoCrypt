@@ -31,6 +31,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,23 +39,37 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
+ * Die Haupt-Activity, die beim Start der App als erstes angezeigt wird. Hier hat der Nutzer Zugriff
+ * auf die Navigation-View, über die auf die App-Einstellungen gelangt wird. Um nun ein Bild zu verschlüsseln,
+ * kann der Nutzer über die Navigations-View mit der Option "Neues Foto" oder den schwebenden Kamera-Button
+ * die Kamera starten und ein neues Foto zu schießen. Andererseits kann der Nutzer über die Option
+ * "aus Galerie" oder den Galerie-Button auf die Galerie zugreifen, um ein bestehendes Bild zu verschlüsseln.
  *
  */
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    /**  **/
+    /** Konstanten zum Unterscheiden der ausgeführten Aufgaben **/
+    /**  Fotoaufnahme **/
     static final int REQUEST_PICK_IMAGE = 1;
+    /** Auswahl aus Galerie **/
     static final int REQUEST_TAKE_PHOTO = 2;
-
-    private String mCurrentPhotoPath;
+    /**
+     * Foto wird an die Activity ConvertToGrayscale weitergeleitet, wo das Schwarzweißbild erstellt
+     * und dann an den Server gesendet wird
+     **/
+    static final int REQUEST_PHOTO_SEND = 3;
+    /** Gesamter Pfad des Fotos **/
+    private String photoPath;
+    /** Verzeichnis zum Speichern aller aufgenommenen und bearbeiteten Fotos **/
     private final String storagePath = Environment.getExternalStorageDirectory()+"/photoCrypt";
-    private String imageFileName; //Dateiname ohne Pfad und Dateiendung
+    /** Dateiname ohne Pfad und Dateiendung**/
+    private String imageFileName;
     //private Uri photoURI;
 
     /**
      * Speichern des von der Kamera geschossenen Fotos. Es wird ein neues File erzeugt und erhält als
-     * Dateinamen einen timeStamp. Der absolute Pfad des Fotos wird in der Klassenvariable @mCurrentPhotoPath
+     * Dateinamen einen timeStamp. Der absolute Pfad des Fotos wird in der Klassenvariable @photoPath
      * und der Name der Bilddatei in @imageFileName gespeichert.
      * @return Bild als File-Objekt
      * @throws IOException Fehler beim Erstellen des Files
@@ -73,24 +88,25 @@ public class MainActivity extends AppCompatActivity
         );
 
         // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = image.getAbsolutePath();
+        photoPath = image.getAbsolutePath();
         imageFileName = image.getName();
         return image;
     }
 
     /**
-     * Erzeugt einen Intent, der die Activity zum Skalieren der Graustufen startet
+     * Erzeugt einen Intent, der die Activity zum Skalieren der Graustufen startet. Dem Intent wird
+     * hier der Pfad zum Bild sowie der Dateiname übergeben, mit dem die Verschlüsselung erfolgen soll.
      */
-    void startConvertToGrayscaleActivity() {
+    private void startConvertToGrayscaleActivity() {
         Intent intent = new Intent(this, ConvertToGrayscale.class);
         Bundle b = new Bundle();
-        b.putString("imagePath", mCurrentPhotoPath);
+        b.putString("imagePath", photoPath);
         b.putString("fileName", imageFileName);
         Log.w("fileName", imageFileName);
-        Log.w("imagePath", mCurrentPhotoPath);
+        Log.w("imagePath", photoPath);
         intent.putExtras(b);
 
-        startActivity(intent);
+        startActivityForResult(intent, REQUEST_PHOTO_SEND);
     }
 
     /**
@@ -172,7 +188,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     *
+     * Funktion zum Start der Kamera des Smartphones. Erst wird eine Datei mit Timestamp im Dateinamen
+     * erstellt und bei Erfolg wird die Kamera über einen Intent gestartet. Die URI des erstellten Files
+     * wird mit putExtra dem Intent angegeben.
      */
     private void takePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -211,14 +229,15 @@ public class MainActivity extends AppCompatActivity
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQUEST_PICK_IMAGE);
     }
-
+/*
     private void galleryAddPic() {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        File f = new File(mCurrentPhotoPath);
+        File f = new File(photoPath);
         Uri contentUri = Uri.fromFile(f);
         mediaScanIntent.setData(contentUri);
         this.sendBroadcast(mediaScanIntent);
     }
+*/
 
     /**
      * Diese Funktion wird automatisch aufgerufen, wenn @startActivityForResult beendet wird. Hier
@@ -268,10 +287,15 @@ public class MainActivity extends AppCompatActivity
             String split = filePath.substring(begin+1, filePath.length()-4); // .jpg und .png abgetrennt
             Log.w("Datei", split);
 
-            mCurrentPhotoPath = filePath;
+            photoPath = filePath;
             imageFileName = split;
             startConvertToGrayscaleActivity();
 
+        }
+        // Bild wurde bearbeitet und an den Server geschickt.
+        else if(requestCode == REQUEST_PHOTO_SEND && resultCode == RESULT_OK) {
+            Toast toast = Toast.makeText(getApplicationContext(), "Bild wird gesendet", Toast.LENGTH_SHORT);
+            toast.show();
         }
     }
 
@@ -348,10 +372,6 @@ public class MainActivity extends AppCompatActivity
             // Activity für Einstellungen starten
             Intent intent = new Intent(this, Settings.class);
             startActivity(intent);
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

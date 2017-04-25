@@ -42,12 +42,14 @@ public class SendPictureService extends IntentService {
             Log.w("Socket","Connecting...");
             Socket client = null;
             try {
+                InetAddress serverAdr = InetAddress.getByName(serverIp);
+                client = new Socket(serverAdr, serverPort);
+
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
                 img.compress(Bitmap.CompressFormat.PNG, 100, stream);
                 byte[] imgByte = stream.toByteArray();
 
-                InetAddress serverAdr = InetAddress.getByName(serverIp);
-                client = new Socket(serverAdr, serverPort);
+
                 OutputStream output = client.getOutputStream();
                 output.write(imgByte);
                 output.flush();

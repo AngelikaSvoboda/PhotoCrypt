@@ -16,17 +16,4 @@
             android:title="Einstellungen" />
     </group>
 
-    <item android:title="Netzwerk">
-        <menu>
-            <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Teilen" />
-            <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:title="An Drucker senden" />
-        </menu>
-    </item>
-
 </menu>
