@@ -43,7 +43,6 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <activity android:name=".CropPictureActivity" />
         <activity android:name=".ConvertToGrayscale" />
         <activity
             android:name=".Settings"

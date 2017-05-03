@@ -50,52 +50,16 @@ import java.net.SocketAddress;
  */
 public class ConvertToGrayscale extends AppCompatActivity {
 
-    private String fileName, photoPath;
-    private Uri originalPictureUri;
-    private Bitmap originalPicture, scaledPicture;
+    /** Name der Bilddatei**/
+    private String imageFileName,
+    /** aboluter Pfad zur Bilddatei**/
+            photoPath;
+    /** das Bild in Graufstufen skaliert **/
+    private Bitmap originalPicture,
+    /** Anhand des Graustufenbild @originalPicture skaliertes Schwarzweiß-Bild **/
+            scaledPicture;
+    /** Schwellwert zur Berechnung von @scaledPicture **/
     private int threshhold;
-
-    /*public class SendPicture extends IntentService
-    {
-        public SendPicture(String name) {
-            super(name);
-        }
-
-        @Override
-        protected void onHandleIntent(@Nullable Intent intent) {
-            Bundle b = intent.getBundleExtra("info");
-            String serverIp = b.getString("Ip");
-            int serverPort = b.getInt("port");
-            String filePath = b.getString("filePath");
-            String phoneId = b.getString("phoneId");
-
-            try {
-                Log.w("Socket","Connecting...");
-                Socket client = null;
-                try {
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    scaledPicture.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                    byte[] imgByte = stream.toByteArray();
-
-                    InetAddress serverAdr = InetAddress.getByName(serverIp);
-                    client = new Socket(serverAdr, serverPort);
-                    OutputStream output = client.getOutputStream();
-                    output.write(imgByte);
-                    output.flush();
-                    //client.connect();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                client.close();
-            }
-            catch (Exception e) {
-                Log.e("Socket", "Fehler bei Socket");
-                e.printStackTrace();
-            }
-
-        }
-    }*/
 
     /**
      * Erstellt die Funktionalität der Buttons und der SeekBar.
@@ -107,11 +71,11 @@ public class ConvertToGrayscale extends AppCompatActivity {
 
         Intent intent = getIntent();
         Bundle b = intent.getExtras();
-        fileName = b.getString("fileName");
+        imageFileName = b.getString("fileName");
         photoPath = b.getString("imagePath");
 
         originalPicture = BitmapFactory.decodeFile(photoPath);
-        originalPicture = toGrayscale(threshhold, 200, 150);
+        originalPicture = toGrayscale(200, 150);
 
         threshhold = 128;
         scaledPicture = changeGrayscale(threshhold);
@@ -142,9 +106,8 @@ public class ConvertToGrayscale extends AppCompatActivity {
                 // scaledPicture soll nun gespeichert werden und dann an den
                 // Server übertragen werden
 
-                File file = new File(Environment.getExternalStorageDirectory()+"/photoCrypt/temp", "conv_" + fileName);
+                File file = new File(Environment.getExternalStorageDirectory()+"/photoCrypt/temp", "conv_" + imageFileName);
                 try {
-                    //File finalPicture = File.createTempFile(fileName + "_conv", ".jpg", file);
                     OutputStream os = new FileOutputStream(file);
                     scaledPicture.compress(Bitmap.CompressFormat.PNG, 100, os);
                     os.flush();
@@ -187,48 +150,22 @@ public class ConvertToGrayscale extends AppCompatActivity {
         Bundle b = new Bundle();
         b.putString("ip", serverIp);
         b.putInt("port", serverPort);
-        b.putString("filePath", fileName);
+        b.putString("filePath", imageFileName);
         b.putString("phoneId", phoneId);
         sendIntent.putExtras(b);
         startService(sendIntent);
 
         finish();
-        /*try {
-            Log.w("Socket","Connecting...");
-            Socket client = null;
-            try {
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                scaledPicture.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                byte[] imgByte = stream.toByteArray();
-
-                InetAddress serverAdr = InetAddress.getByName(serverIp);
-                client = new Socket(serverAdr, serverPort);
-                OutputStream output = client.getOutputStream();
-                output.write(imgByte);
-                output.flush();
-                //client.connect();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            client.close();
-        }
-        catch (Exception e) {
-            Log.e("Socket", "Fehler bei Socket");
-            e.printStackTrace();
-        }*/
-
     }
 
     /**
      * Funktion zur einmaligen Berechnung eines Graufstufenbildes, dass auf die eingestellten Maße
      * skaliert wird.
-     * @param threshhold Schwellwert zwischen 0 und 255
      * @param optHeight einzustellende Höhe des Bildes
      * @param optWidth einzustellende Breite des Bildes
      * @return schwarzweiß skaliertes Bild
      */
-    public Bitmap toGrayscale(int threshhold, int optHeight, int optWidth)
+    public Bitmap toGrayscale(int optHeight, int optWidth)
     {
         int width, height;
         height = originalPicture.getHeight();

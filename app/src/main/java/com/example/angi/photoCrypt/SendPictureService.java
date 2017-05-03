@@ -16,7 +16,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 /**
- *
+ * Service zum Senden des Bildes an den angegeben Server.
  */
 public class SendPictureService extends IntentService {
 
@@ -25,8 +25,12 @@ public class SendPictureService extends IntentService {
     }
 
     /**
-     *
-     * @param intent
+     * Funktion die beim Start durch den Intent aufgerufen wird. es wird zunächst das Bitmap aus dem
+     * Pfad und danach ein Socket für die Verbindung zum Server erzeugt. Das Bitmap wird über einen
+     * {@link ByteArrayOutputStream} in ein byte-Array konvertiert, um es dann in einen @{@link OutputStream}
+     * zu schreiben.
+     * @param intent Intent mit einem Bundle, in dem die Server-Ip und Port, der Bildpfad und die
+     *               eingestellte TelefonId übergeben worden sind.
      */
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {

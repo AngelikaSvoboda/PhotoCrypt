@@ -151,9 +151,6 @@ public class MainActivity extends AppCompatActivity
             editor.commit();
         }
 
-
-        //settings = PreferenceManager.setDefaultValues(this, R.xml.settings, false);
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -229,15 +226,6 @@ public class MainActivity extends AppCompatActivity
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQUEST_PICK_IMAGE);
     }
-/*
-    private void galleryAddPic() {
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        File f = new File(photoPath);
-        Uri contentUri = Uri.fromFile(f);
-        mediaScanIntent.setData(contentUri);
-        this.sendBroadcast(mediaScanIntent);
-    }
-*/
 
     /**
      * Diese Funktion wird automatisch aufgerufen, wenn @startActivityForResult beendet wird. Hier
@@ -254,8 +242,6 @@ public class MainActivity extends AppCompatActivity
         // Nutzer hat selbst ein Foto geschossen
         if(requestCode == REQUEST_TAKE_PHOTO){
             if(resultCode == RESULT_OK) {
-                //galleryAddPic();
-                //Intent intent = new Intent(this, CropPictureActivity.class);
                 startConvertToGrayscaleActivity();
             }
         }

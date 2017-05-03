@@ -19,13 +19,36 @@ import android.widget.Toast;
 
 public class Settings extends AppCompatActivity{
 
+    /** Objekt zum Speichern von App-Einstellungen wie Bildgröße und Serverdaten **/
     private SharedPreferences sp;
+    /** Objekt mit dem @sp editiert und überschrieben werden kann **/
     private SharedPreferences.Editor editor;
-    private int tempHeight, tempWidth, tempPort;
-    private String tempIp, tempPhoneId;
+    /** Temporäre Variable für die Höhe. Sie wird am Ende vom @editor übernommen, wenn
+     * der Nutzer die Änderungen übernimmt**/
+    private int tempHeight,
+    /** Temporäre Variable für die Breite**/
+            tempWidth,
+    /** Temporäre Variable für den Port der Servers**/
+            tempPort;
+    /** Temporäre Variable für die IP-Adresse des Servers**/
+    private String tempIp,
+    /** Temporäre Variable für die ID des Telefons**/
+            tempPhoneId;
 
+    /**
+     * Die Funktion setzt die Werte in die EditText-Views ein, die in dem @sp-Objekt gespeichert sind.
+     * Dabei setzt er auch die temporären Variablen auf den gleichen Wert. Jede EditText-View
+     * erhält nun einen TextWatcher, wo auf die Eingabe des Nutzers reagiert wird und in den temporären
+     * Variablen abgespeichert wird. Ist die EditText-View leer, wird für int-Variablen 0 als Wert
+     * gesetzt, da "" als String interpretiert wird. Drückt der Nutzer nun Übernehmen, wird zunächst
+     * gesprüft, ob eins der Felder leer gelassen oder 0 ist. Dann erscheint eine Meldung als Toast-
+     * Objekt und weißt darauf hin, das die Eingaben unvollständig sind. Nur bei korrekten Eingaben
+     * wird im @editor-Objekt dann die Änderungen übernommen. Drückt der Nutzer abbrechen, wird die
+     * Activity einfach beendet ohne die temporären Variablen zu übernehmen.
+     * @param savedInstanceState
+     */
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_settings);
@@ -120,8 +143,6 @@ public class Settings extends AppCompatActivity{
             @Override
             public void afterTextChanged(Editable editable) {
                 tempIp = ip.getText().toString();
-
-
             }
         });
 
@@ -185,15 +206,8 @@ public class Settings extends AppCompatActivity{
             @Override
             public void onClick(View view) {
                 finish();
-                //startMainActivity();
             }
         });
 
-
-    }
-    private void startMainActivity()
-    {
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
     }
 }
