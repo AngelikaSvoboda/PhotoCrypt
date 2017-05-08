@@ -51,13 +51,13 @@ import java.net.SocketAddress;
 public class ConvertToGrayscale extends AppCompatActivity {
 
     /** Name der Bilddatei**/
-    private String imageFileName,
+    private String imageFileName;
     /** aboluter Pfad zur Bilddatei**/
-            photoPath;
+    private String photoPath;
     /** das Bild in Graufstufen skaliert **/
-    private Bitmap originalPicture,
+    private Bitmap originalPicture;
     /** Anhand des Graustufenbild @originalPicture skaliertes Schwarzweiß-Bild **/
-            scaledPicture;
+    private Bitmap scaledPicture;
     /** Schwellwert zur Berechnung von @scaledPicture **/
     private int threshhold;
 
@@ -154,7 +154,7 @@ public class ConvertToGrayscale extends AppCompatActivity {
         b.putString("phoneId", phoneId);
         sendIntent.putExtras(b);
         startService(sendIntent);
-
+        setResult(RESULT_OK);
         finish();
     }
 
