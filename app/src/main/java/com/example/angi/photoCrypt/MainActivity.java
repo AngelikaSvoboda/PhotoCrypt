@@ -1,25 +1,15 @@
 package com.example.angi.photoCrypt;
 
-import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.PreferenceManager;
-import android.provider.ContactsContract;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.FileProvider;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -30,7 +20,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -218,7 +207,8 @@ public class MainActivity extends AppCompatActivity
     /**
      * Funktion zum Auswählen eines Bildes aus der Galerie des Handys. Die Funktion wird nur durch Auswahl
      * des Menüpunkts "Aus Galerie" oder über den unteren rechten Button im Hauptfenster aufgerufen.
-     * Dabei erstellt sie wie beim
+     * Dabei erstellt sie wie bei @takePictureIntent einen Intent mit @ACTION_GET_CONTENT und erstellt
+     * einen Chooser für Wahl eines Bildes.
      */
     private void galleryChooserIntent() {
         Intent intent = new Intent();
@@ -248,25 +238,37 @@ public class MainActivity extends AppCompatActivity
         // Nutzer sucht Foto aus Galerie aus
         else if(requestCode == REQUEST_PICK_IMAGE && resultCode == RESULT_OK) {
             Uri selectedImageUri = data.getData();
+            String uristring = selectedImageUri.toString();
             String s = selectedImageUri.getPath();
+            Log.w("uri", uristring);
+            Log.w("path",s);
+            // Unterscheide ob mit "content" beginnt, ansonsten ist es ein fertiger Pfad aus dem
+            // Verzeichnis
 
-            // Ermittlung des Pfads aus der Uri des Bildes
             String filePath = "";
-            String wholeID = DocumentsContract.getDocumentId(selectedImageUri);
-            // Split at colon, use second item in the array
-            String id = wholeID.split(":")[1];
-            String[] column = { MediaStore.Images.Media.DATA };
-            // where id is equal to
-            String sel = MediaStore.Images.Media._ID + "=?";
-            Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    column, sel, new String[]{ id }, null);
-            int columnIndex = cursor.getColumnIndex(column[0]);
-            if (cursor.moveToFirst()) {
-                filePath = cursor.getString(columnIndex);
-            }
+            if(uristring.contains("content:")) {
+                // Ermittlung des Pfads aus der Uri des Bildes
 
+                String wholeID = DocumentsContract.getDocumentId(selectedImageUri);
+                // Split at colon, use second item in the array
+                String id = wholeID.split(":")[1];
+                String[] column = {MediaStore.Images.Media.DATA};
+                // where id is equal to
+                String sel = MediaStore.Images.Media._ID + "=?";
+                Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        column, sel, new String[]{id}, null);
+                int columnIndex = cursor.getColumnIndex(column[0]);
+                if (cursor.moveToFirst()) {
+                    filePath = cursor.getString(columnIndex);
+                }
+                cursor.close();
+            }
+            // Bild wurde außerhalb der Galerie gewählt (bspw. über Mixplorer) dann ist die Uri gleich
+            // der Pfad
+            else {
+                filePath = s;
+            }
             Log.w("Pfad", filePath);
-            cursor.close();
 
             // Dateinamen ohne Pfad und Endung speichern
             int begin = filePath.lastIndexOf("/"); // ab da fängt der Dateiname an
